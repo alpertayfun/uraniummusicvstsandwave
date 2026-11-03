@@ -1,0 +1,80 @@
+# Builds the macOS (.dmg) and Windows (.exe) installers.
+# Run it from the Actions tab ("Run workflow"), or push a tag like v1.0.0 to also publish a GitHub release.
+name: Installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build plugin (universal arm64 + x86_64)
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release -j 4
+
+      - name: Build .dmg
+        env:
+          # optional: set these repository secrets once you have Apple Developer ID certificates in the keychain
+          MAC_APP_SIGN_IDENTITY: ${{ secrets.MAC_APP_SIGN_IDENTITY }}
+          MAC_INSTALLER_SIGN_IDENTITY: ${{ secrets.MAC_INSTALLER_SIGN_IDENTITY }}
+        run: packaging/mac/build_dmg.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SANDWAVE-macOS
+          path: dist/*.dmg
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build plugin (x64)
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -A x64
+          cmake --build build --config Release --parallel
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build .exe installer
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path CMakeLists.txt -Pattern 'project\(Sandwave VERSION ([0-9.]+)\)').Matches[0].Groups[1].Value
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" packaging\windows\installer.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SANDWAVE-Windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ macos, windows ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

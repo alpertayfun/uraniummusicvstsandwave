@@ -1,0 +1,4 @@
+#!/bin/sh
+# let hosts see the new Audio Unit without a restart
+killall -9 AudioComponentRegistrar 2>/dev/null || true
+exit 0

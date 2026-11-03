@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="2">
+    <title>SANDWAVE by Uranium Music</title>
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <conclusion file="conclusion.html" mime-type="text/html"/>
+    <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64"/>
+    <domains enable_localSystem="true"/>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="11.0"/>
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.uraniummusic.sandwave"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="com.uraniummusic.sandwave" visible="false">
+        <pkg-ref id="com.uraniummusic.sandwave"/>
+    </choice>
+    <pkg-ref id="com.uraniummusic.sandwave" version="@VERSION@" onConclusion="none">Sandwave.pkg</pkg-ref>
+</installer-gui-script>

@@ -1,0 +1,8 @@
+build/
+shots/
+.DS_Store
+*.xcodeproj/
+.vscode/
+.idea/
+dist/
+test-project/
