@@ -135,20 +135,24 @@ void Plate::paint (juce::Graphics& g)
         g.drawEllipse (getLocalBounds().toFloat().reduced (1.0f), 1.0f);
     }
 
-    juce::Image image (juce::Image::ARGB, w, h, true);
+    // drawn at the screen's real resolution so the grains stay crisp on Retina displays
+    const float scale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
+    const int iw = juce::roundToInt ((float) w * scale), ih = juce::roundToInt ((float) h * scale);
+    const int dot = juce::jmax (2, juce::roundToInt (1.5f * scale));
+    juce::Image image (juce::Image::ARGB, iw, ih, true);
     {
         juce::Image::BitmapData data (image, juce::Image::BitmapData::writeOnly);
         const auto sand = sandCol;
         for (int i = 0; i < numGrains; ++i)
         {
-            const int px = (int) (gx[(size_t) i] * (float) w), py = (int) (gy[(size_t) i] * (float) h);
-            for (int dy = 0; dy < 2; ++dy)
-                for (int dx = 0; dx < 2; ++dx)
-                    if (px + dx < w && py + dy < h)
+            const int px = (int) (gx[(size_t) i] * (float) iw), py = (int) (gy[(size_t) i] * (float) ih);
+            for (int dy = 0; dy < dot; ++dy)
+                for (int dx = 0; dx < dot; ++dx)
+                    if (px + dx < iw && py + dy < ih)
                         data.setPixelColour (px + dx, py + dy, sand);
         }
     }
-    g.drawImageAt (image, 0, 0);
+    g.drawImage (image, getLocalBounds().toFloat());
 
     // the bolt the plate is mounted on
     const auto c = getLocalBounds().toFloat().getCentre();

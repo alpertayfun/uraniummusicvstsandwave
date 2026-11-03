@@ -1,0 +1,81 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SANDWAVE Art</title><style>
+*{box-sizing:border-box;margin:0}
+html,body{background:#1a0f08;overflow:hidden;font-family:-apple-system,"Helvetica Neue",Helvetica,sans-serif;color:#f0dfc4}
+.title{font-family:"Avenir Next","Helvetica Neue",sans-serif;line-height:1;white-space:nowrap;letter-spacing:.08em}
+.title b{font-weight:800;color:#f3e4c8}
+.brand{display:flex;align-items:center;gap:14px;font-weight:800;letter-spacing:.14em;color:#c9a477}
+.plate{position:absolute;background:url(raw/editor_square.png) -32px -144px/1720px 1084px;border-radius:10px}
+.view{display:none;position:relative;overflow:hidden;background:radial-gradient(900px 700px at 70% 50%,#4c3220 0,#2e1c10 55%,#1a0f08 100%)}
+
+#cover{width:1280px;height:720px}
+#cover .window{position:absolute;left:540px;top:78px;width:860px;height:542px;border-radius:12px;background:url(raw/editor_square.png) 0 0/860px 542px;box-shadow:0 34px 90px rgba(0,0,0,.7),0 0 0 1px rgba(201,164,119,.35)}
+#cover .fade{position:absolute;left:480px;top:0;bottom:0;width:80px;background:linear-gradient(90deg,#2a190e,rgba(42,25,14,0))}
+#cover .brand{position:absolute;left:66px;top:66px;font-size:21px}
+#cover .title{position:absolute;left:64px;top:214px;font-size:60px;letter-spacing:.04em}
+#cover .sub{position:absolute;left:68px;top:306px;font-size:22px;font-weight:700;letter-spacing:.28em;color:#c9a477}
+#cover .tag{position:absolute;left:68px;top:360px;font-size:28px;font-weight:600;color:#e8cfa8;line-height:1.28}
+#cover .specs{position:absolute;left:68px;top:470px;width:440px;display:flex;flex-wrap:wrap;gap:10px}
+.specs b{font-size:18px;font-weight:700;padding:9px 13px;border-radius:8px;background:rgba(26,15,8,.72);box-shadow:inset 0 0 0 1px rgba(201,164,119,.55)}
+
+#thumb{width:600px;height:600px}
+#thumb .plate{left:110px;top:34px;width:380px;height:380px;background:url(raw/pattern_square_06_3-5.png) center/cover;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(201,164,119,.4)}
+#thumb .title{position:absolute;left:0;right:0;top:446px;text-align:center;font-size:72px}
+#thumb .brand{position:absolute;left:0;right:0;top:540px;justify-content:center;font-size:20px;gap:10px}
+
+#icon{width:400px;height:400px}
+#icon .plate{left:40px;top:40px;width:320px;height:320px;background:url(raw/pattern_square_06_3-5.png) center/cover;box-shadow:0 16px 50px rgba(0,0,0,.6),0 0 0 1px rgba(201,164,119,.4)}
+
+.shot{width:1800px;height:1200px}
+.shot.on{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.shot h2{font-size:50px;font-weight:800;text-align:center}
+.shot p{font-size:24px;color:#e8cfa8;text-align:center;margin:10px 0 40px}
+.shot .ed{width:1376px;height:867px;border-radius:14px;background-size:1376px 867px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(201,164,119,.3)}
+#patterns .grid{display:grid;grid-template-columns:repeat(5,300px);gap:28px 40px}
+#patterns figure{margin:0;text-align:center}
+#patterns img{display:block;width:300px;height:300px;border-radius:8px;box-shadow:0 0 0 6px #120b06,0 0 0 7px #5a3b24}
+#patterns figcaption{font-size:22px;font-weight:700;margin-top:16px}
+#patterns figcaption span{font-weight:500;color:#c9a477}
+</style></head><body>
+<div id="cover" class="view"><div class="window"></div><div class="fade"></div>
+ <div class="brand"><svg class="logo" width="42" height="42"></svg>URANIUM MUSIC</div>
+ <div class="title"><b>SANDWAVE</b></div>
+ <div class="sub">CYMATIC VOICE PLATE</div>
+ <div class="tag">See your voice draw<br>sand patterns in real time</div>
+ <div class="specs"><b>MIC + VOICE INPUT</b><b>14 PLATE MODES</b><b>SQUARE + ROUND</b><b>REAL-TIME FFT</b><b>VST3 + AU</b><b>MAC + WINDOWS</b></div>
+</div>
+<div id="thumb" class="view"><div class="plate"></div>
+ <div class="title"><b>SANDWAVE</b></div>
+ <div class="brand"><svg class="logo" width="26" height="26"></svg>URANIUM MUSIC</div>
+</div>
+<div id="icon" class="view"><div class="plate"></div></div>
+<div id="shot1" class="view shot">
+ <h2>Your voice, drawn in sand</h2>
+ <p>The loudest frequency picks the plate's vibration pattern. The sand gathers on the still lines.</p>
+ <div class="ed" style="background-image:url(raw/editor_square.png)"></div>
+</div>
+<div id="patterns" class="view shot">
+ <h2>14 vibration modes on two plates</h2>
+ <p>Low sounds draw simple figures, high sounds draw dense ones. Pick a square or a round plate.</p>
+ <div class="grid"></div>
+</div>
+<div id="shot3" class="view shot">
+ <h2>Square or round plate</h2>
+ <p>Switch the plate shape any time. SHAKE pours fresh sand.</p>
+ <div class="ed" style="background-image:url(raw/editor_circle.png)"></div>
+</div>
+<script>
+// same symbol as the other Uranium Music plugins
+document.querySelectorAll('.logo').forEach(svg=>{
+  const s=+svg.getAttribute('width'),c=s/2,R=s/2,r=R*.32,h=.52;let d='';
+  for(let i=0;i<3;i++){const a=i*2*Math.PI/3;
+    const P=(rad,t)=>[c+Math.sin(t)*rad,c-Math.cos(t)*rad].join(' ');
+    d+=`M${P(r,a-h)} L${P(R,a-h)} A${R} ${R} 0 0 1 ${P(R,a+h)} L${P(r,a+h)} A${r} ${r} 0 0 0 ${P(r,a-h)}Z `;}
+  svg.innerHTML=`<path d="${d}" fill="#c9a477"/><circle cx="${c}" cy="${c}" r="${R*.2}" fill="#c9a477"/>`;
+});
+const modes=[["02","2-3","Low"],["04","3-4","Low-mid"],["06","3-5","Mid"],["09","3-7","High-mid"],["11","4-7","High"]];
+document.querySelector('#patterns .grid').innerHTML=["square","circle"].flatMap(s=>modes.map(([i,nm,l])=>
+  `<figure><img src="raw/pattern_${s}_${i}_${nm}.png"><figcaption>${l} <span>${nm.replace('-',':')}</span></figcaption></figure>`)).join('');
+const view=document.getElementById(new URLSearchParams(location.search).get('v'));
+view.style.display=view.classList.contains('shot')?'':'block';
+if(view.classList.contains('shot'))view.classList.add('on');
+</script></body></html>

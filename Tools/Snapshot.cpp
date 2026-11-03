@@ -457,13 +457,75 @@ static int runShots (const juce::File& outDir)
     return failures;
 }
 
+static void savePngScaled (juce::Component& c, const juce::File& file, float scale)
+{
+    file.deleteFile();
+    juce::FileOutputStream out (file);
+    juce::PNGImageFormat().writeImageToStream (c.createComponentSnapshot (c.getLocalBounds(), true, scale), out);
+    std::printf ("wrote %s\n", file.getFullPathName().toRawUTF8());
+}
+
+// Store and README images: the editor at 2x in a few states, and single plates in several modes
+static int runStore (const juce::File& outDir)
+{
+    outDir.createDirectory();
+    SandwaveAudioProcessor proc;
+    proc.getLicense().waitUntilIdle();
+    proc.prepareToPlay (48000.0, 800);
+    proc.getLicense().forceStateForTesting (true, {});
+
+    std::unique_ptr<juce::AudioProcessorEditor> editor (proc.createEditor());
+    auto* ed = dynamic_cast<SandwaveAudioProcessorEditor*> (editor.get());
+    auto run = [&] (float hz, float amp, int frames)
+    {
+        for (int i = 0; i < frames; ++i) { feedFrame (proc, hz, amp); ed->tick(); }
+    };
+
+    run (246.0f, 0.1f, 400);
+    savePngScaled (*editor, outDir.getChildFile ("editor_square.png"), 2.0f);
+    savePngScaled (*editor, outDir.getChildFile ("editor_square_1x.png"), 1.0f);
+
+    proc.apvts.getParameterAsValue ("plate") = 1;
+    run (520.0f, 0.1f, 400);
+    savePngScaled (*editor, outDir.getChildFile ("editor_circle.png"), 2.0f);
+    savePngScaled (*editor, outDir.getChildFile ("editor_circle_1x.png"), 1.0f);
+
+    ed->showInfo (true);
+    savePngScaled (*editor, outDir.getChildFile ("info_1x.png"), 1.0f);
+    ed->showInfo (false);
+
+    proc.getLicense().forceStateForTesting (false, "Enter your e-mail and license key to activate SANDWAVE.");
+    {
+        std::unique_ptr<juce::AudioProcessorEditor> locked (proc.createEditor());
+        savePngScaled (*locked, outDir.getChildFile ("license_1x.png"), 1.0f);
+    }
+
+    // single plates: the same modes on the square and the round plate
+    const int modes[] = { 2, 4, 6, 9, 11 };
+    for (int shape = 0; shape < 2; ++shape)
+        for (int mode : modes)
+        {
+            Plate plate;
+            plate.setBounds (0, 0, 438, 438);
+            plate.setCircle (shape == 1);
+            plate.setMode (mode);
+            for (int i = 0; i < 500; ++i)
+                plate.step (1.0f, 0.5f);
+            savePngScaled (plate, outDir.getChildFile (juce::String::formatted ("pattern_%s_%02d_%d-%d.png", shape == 0 ? "square" : "circle",
+                                                                                 mode, plate.getModeN(), plate.getModeM())), 1.0f);
+        }
+    return 0;
+}
+
 int main (int argc, char** argv)
 {
     juce::ScopedJuceInitialiser_GUI init;
     if (argc >= 3 && juce::String (argv[1]) == "--license-test")
         return runLicenseTest (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]));
+    if (argc >= 3 && juce::String (argv[1]) == "--store")
+        return runStore (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]));
     if (argc >= 2)
         return runShots (juce::File::getCurrentWorkingDirectory().getChildFile (argv[1]));
-    std::printf ("usage: snapshot <out-dir> | snapshot --license-test <work-dir>\n");
+    std::printf ("usage: snapshot <out-dir> | snapshot --store <out-dir> | snapshot --license-test <work-dir>\n");
     return 1;
 }
